@@ -238,3 +238,8 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 .box-lid span,.box-lid i{opacity:calc(1 - var(--open)*1.2)}
 .box-brand,.box-cream,.box-caption{opacity:calc(1 - var(--open)*1.15)}
 }
+
+/* v9.3: mobile - the folded-down front wall (baked texture) melts away as the jar rises */
+@media(max-width:760px){
+.box-front{opacity:calc(1 - clamp(0, (var(--lift) - .6)*2.5, 1))}
+}
