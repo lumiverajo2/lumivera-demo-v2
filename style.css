@@ -243,3 +243,8 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 @media(max-width:760px){
 .box-front{opacity:calc(1 - clamp(0, (var(--lift) - .6)*2.5, 1))}
 }
+
+/* v9.4: decisive mobile hero simplification - one clear focal point per scroll stage */
+@media(max-width:760px){
+.ui-status,.kinetic-word,.chapter,.floating-chip,.orbit{display:none}
+}
