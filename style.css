@@ -234,7 +234,7 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 @media(max-width:760px){
 .floating-chip{opacity:calc(1 - var(--lift)*1.4)}
 .orbit{display:none}
-.chapter{opacity:clamp(0, calc((1 - var(--p))*5), 1)}
+.chapter{opacity:clamp(0, calc((0.9 - var(--p))*5), 1)}
 .box-lid span,.box-lid i{opacity:calc(1 - var(--open)*1.2)}
 .box-brand,.box-cream,.box-caption{opacity:calc(1 - var(--open)*1.15)}
 }
