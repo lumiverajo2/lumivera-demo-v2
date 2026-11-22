@@ -229,3 +229,12 @@ header nav a:after{content:'';position:absolute;bottom:-5px;right:0;width:100%;h
 header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 .product-visual>img.swapping{opacity:0}
 @media(prefers-reduced-motion:reduce){.splash{display:none}.tilt-card:after{display:none}.brand-banner img{transform:none!important;transition:none!important}}
+
+/* v9.1: declutter mobile hero as the box opens and the jar rises */
+@media(max-width:760px){
+.floating-chip{opacity:calc(1 - var(--lift)*1.4)}
+.orbit{display:none}
+.chapter{opacity:clamp(0, calc((1 - var(--p))*5), 1)}
+.box-lid span,.box-lid i{opacity:calc(1 - var(--open)*1.2)}
+.box-brand,.box-cream,.box-caption{opacity:calc(1 - var(--open)*1.15)}
+}
