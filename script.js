@@ -3,17 +3,33 @@ const root = document.documentElement;
 const experience = document.querySelector('.unboxing');
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let scheduled = false;
+const renderJar = document.querySelector('.realistic-jar');
+const cur = {p:0,o:0,l:0}, tgt = {p:0,o:0,l:0};
+let lerpRaf = null;
+function applyFrame() {
+  root.style.setProperty('--p', cur.p.toFixed(4));
+  root.style.setProperty('--open', cur.o.toFixed(4));
+  root.style.setProperty('--lift', cur.l.toFixed(4));
+  const frame = reduced ? 0 : Math.round(Math.max(0, Math.min(1, (cur.p-.32)/.66))*35);
+  if(renderJar) renderJar.style.backgroundPosition = ((frame%6)*20)+'% '+(Math.floor(frame/6)*20)+'%';
+}
+function lerpStep() {
+  let settled = true;
+  for (const k of ['p','o','l']) {
+    const d = tgt[k]-cur[k];
+    if (Math.abs(d) > .0006) { cur[k] += d*(reduced?1:.16); settled = false; }
+    else cur[k] = tgt[k];
+  }
+  applyFrame();
+  lerpRaf = settled ? null : requestAnimationFrame(lerpStep);
+}
 function draw() {
   const rect = experience.getBoundingClientRect();
   const p = Math.max(0, Math.min(1, -rect.top / (experience.offsetHeight - innerHeight)));
-  const o = Math.max(0, Math.min(1, (p - .09) / .46));
-  const l = Math.max(0, Math.min(1, (p - .35) / .5));
-  root.style.setProperty('--p', p.toFixed(4));
-  root.style.setProperty('--open', o.toFixed(4));
-  root.style.setProperty('--lift', l.toFixed(4));
-  const renderJar = document.querySelector('.realistic-jar');
-  const frame = reduced ? 0 : Math.round(Math.max(0, Math.min(1, (p-.32)/.66))*35);
-  if(renderJar) renderJar.style.backgroundPosition = ((frame%6)*20)+'% '+(Math.floor(frame/6)*20)+'%';
+  tgt.p = p;
+  tgt.o = Math.max(0, Math.min(1, (p - .09) / .46));
+  tgt.l = Math.max(0, Math.min(1, (p - .35) / .5));
+  if (!lerpRaf) lerpRaf = requestAnimationFrame(lerpStep);
   document.querySelector('#chapter-number').textContent = p < .35 ? '01' : p < .75 ? '02' : '03';
   document.querySelector('#chapter-name').textContent = p < .35 ? 'البداية' : p < .75 ? 'الاكتشاف' : 'العناية';
   document.querySelector('.mobile-order').classList.toggle('show', rect.bottom < innerHeight * .4);
@@ -56,7 +72,7 @@ document.querySelectorAll('.benefit').forEach((row,index)=>{const note=document.
 if(!reduced){
  document.querySelectorAll('.hero-copy h1,.intro h2,.benefits-content h2,.product-info h2,.trust-heading h2').forEach(heading=>{let number=0;const walk=node=>{[...node.childNodes].forEach(child=>{if(child.nodeType===Node.TEXT_NODE&&child.textContent.trim()){const fragment=document.createDocumentFragment();child.textContent.split(/(\s+)/).forEach(word=>{if(!word.trim()){fragment.append(document.createTextNode(word));return;}const wrap=document.createElement('span');wrap.className='word-reveal';const ink=document.createElement('span');ink.textContent=word;ink.style.setProperty('--word-delay',(number++*65)+'ms');wrap.append(ink);fragment.append(wrap);});child.replaceWith(fragment);}else if(child.nodeType===Node.ELEMENT_NODE)walk(child);});};walk(heading);});
  const ritual=document.querySelector('.intro');const label=document.createElement('span');label.className='motion-label';label.innerHTML='<i></i> لحظتكِ اليومية، بإيقاعكِ';ritual.append(label);
- const photos=document.querySelectorAll('.benefits-image');
+ const photos=document.querySelectorAll('.benefits-image,.brand-banner');
  const motionUpdate=()=>{photos.forEach(photo=>{const rect=photo.getBoundingClientRect();if(rect.bottom>0&&rect.top<innerHeight){const t=(rect.top+rect.height/2-innerHeight/2)/innerHeight;photo.style.setProperty('--photo-drift',Math.max(-15,Math.min(15,t*24))+'px');}});};addEventListener('scroll',motionUpdate,{passive:true});motionUpdate();
  const pauseObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{entry.target.style.animationPlayState=entry.isIntersecting?'running':'paused';}),{rootMargin:'100px'});document.querySelectorAll('.story-icon,.product-tag,.closing>span,.marquee>div').forEach(el=>pauseObserver.observe(el));
  document.querySelectorAll('.primary').forEach(button=>button.addEventListener('pointerdown',event=>{const r=button.getBoundingClientRect();const ripple=document.createElement('span');ripple.className='ripple';ripple.style.left=(event.clientX-r.left)+'px';ripple.style.top=(event.clientY-r.top)+'px';button.append(ripple);setTimeout(()=>ripple.remove(),750);}));
@@ -66,7 +82,7 @@ if(!reduced){
 
 // Photo selection stays local and keeps every original available in the gallery.
 const photoCaptions={texture:'صورة مقرّبة لقوام كريم لوميفيرا داخل العبوة',lifestyle:'صورة تحمل فيها عارضة علبة لوميفيرا',closed:'عبوة لوميفيرا على قاعدة دائرية بيضاء',open:'عبوة لوميفيرا المفتوحة على قاعدة بيضاء',hand:'يد تحمل عبوة لوميفيرا'};
-document.querySelectorAll('[data-photo]').forEach(button=>button.addEventListener('click',()=>{const photo=document.querySelector('#product-photo');photo.src='assets/studio-'+button.dataset.photo+'.webp';photo.alt=photoCaptions[button.dataset.photo];document.querySelectorAll('[data-photo]').forEach(x=>{x.classList.toggle('selected',x===button);x.setAttribute('aria-pressed',String(x===button));});}));
+document.querySelectorAll('[data-photo]').forEach(button=>button.addEventListener('click',()=>{if(button.classList.contains('selected'))return;const photo=document.querySelector('#product-photo');photo.onload=()=>photo.classList.remove('swapping');photo.classList.add('swapping');setTimeout(()=>{photo.src='assets/studio-'+button.dataset.photo+'.webp';photo.alt=photoCaptions[button.dataset.photo];},reduced?0:170);document.querySelectorAll('[data-photo]').forEach(x=>{x.classList.toggle('selected',x===button);x.setAttribute('aria-pressed',String(x===button));});}));
 
 /* v8: React Bits-style components, vanilla and reduced-motion aware. */
 if(!reduced){
@@ -94,3 +110,44 @@ if(matchMedia('(hover:hover) and (pointer:fine)').matches){
  });
 }
 document.querySelectorAll('.add-cart').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.bag-count').forEach(el=>{el.classList.remove('bump');requestAnimationFrame(()=>el.classList.add('bump'));});}));
+
+/* v9: wow polish - splash intro, pointer parallax, velocity marquee, tilt cards, nav state. */
+if(!reduced){
+ try{
+  if(!sessionStorage.getItem('lv-splash')){
+   sessionStorage.setItem('lv-splash','1');
+   root.classList.add('has-splash');
+   const splash=document.createElement('div');
+   splash.className='splash';
+   splash.innerHTML='<span class="splash-mark">LUMI<b>VERA</b></span><i class="splash-line"></i>';
+   document.body.append(splash);
+   setTimeout(()=>{splash.remove();root.classList.remove('has-splash');},2500);
+  }
+ }catch(e){}
+ if(matchMedia('(hover:hover) and (pointer:fine)').matches){
+  const sceneEl=document.querySelector('.scene');
+  if(sceneEl){
+   let tx=0,ty=0,cx=0,cy=0,parRaf=null;
+   const parStep=()=>{cx+=(tx-cx)*.09;cy+=(ty-cy)*.09;sceneEl.style.setProperty('--px',cy.toFixed(2)+'deg');sceneEl.style.setProperty('--py',tx.toFixed(2)+'deg');parRaf=(Math.abs(tx-cx)>.02||Math.abs(ty-cy)>.02)?requestAnimationFrame(parStep):null;};
+   const stage=document.querySelector('.stage');
+   stage.addEventListener('pointermove',e=>{tx=((e.clientX/innerWidth)-.5)*6;ty=((e.clientY/innerHeight)-.5)*4.5;if(!parRaf)parRaf=requestAnimationFrame(parStep);},{passive:true});
+   stage.addEventListener('pointerleave',()=>{tx=0;ty=0;if(!parRaf)parRaf=requestAnimationFrame(parStep);});
+  }
+  document.querySelectorAll('.moment,.trust-photo').forEach(card=>{
+   card.classList.add('tilt-card');
+   card.addEventListener('pointermove',e=>{const r=card.getBoundingClientRect();card.style.setProperty('--t-y',((e.clientX-r.left)/r.width-.5)*6+'deg');card.style.setProperty('--t-x',-((e.clientY-r.top)/r.height-.5)*6+'deg');card.style.setProperty('--mx',(e.clientX-r.left)+'px');card.style.setProperty('--my',(e.clientY-r.top)+'px');});
+   card.addEventListener('pointerleave',()=>{card.style.setProperty('--t-x','0deg');card.style.setProperty('--t-y','0deg');});
+  });
+ }
+ const mq=document.querySelector('.marquee');
+ if(mq){
+  let lastY=scrollY,skew=0,skewRaf=null;
+  const skewStep=()=>{skew*=.88;if(Math.abs(skew)<.05){mq.style.setProperty('--mq-skew','0deg');skewRaf=null;return;}mq.style.setProperty('--mq-skew',skew.toFixed(2)+'deg');skewRaf=requestAnimationFrame(skewStep);};
+  addEventListener('scroll',()=>{skew=Math.max(-9,Math.min(9,skew+(scrollY-lastY)*.05));lastY=scrollY;if(!skewRaf)skewRaf=requestAnimationFrame(skewStep);},{passive:true});
+ }
+}
+const navLinks=[...document.querySelectorAll('header nav a')];
+if(navLinks.length&&'IntersectionObserver' in window){
+ const navObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}),{rootMargin:'-35% 0px -55% 0px'});
+ navLinks.forEach(a=>{const s=document.querySelector(a.getAttribute('href'));if(s)navObs.observe(s);});
+}
