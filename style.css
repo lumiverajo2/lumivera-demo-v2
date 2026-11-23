@@ -253,3 +253,8 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 @media(max-width:760px){
 .floating-chip.chip-one{display:flex;left:50%;right:auto;top:452px;bottom:auto;transform:translateX(-50%) scale(1.35);transform-origin:center;animation:none;opacity:calc(1 - var(--lift)*1.6);pointer-events:none}
 }
+
+/* v9.6: mobile - chip-one moves above-left of the box; fades in once the headline clears, out before the jar rises */
+@media(max-width:760px){
+.floating-chip.chip-one{left:12px;right:auto;top:45px;bottom:auto;transform:rotate(-9deg) scale(1.15);transform-origin:left top;animation:none;opacity:calc(clamp(0,(var(--p) - .08)*5,1) * (1 - clamp(0,(var(--p) - .33)*5,1)));pointer-events:none}
+}
