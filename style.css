@@ -248,3 +248,8 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 @media(max-width:760px){
 .ui-status,.kinetic-word,.chapter,.floating-chip,.orbit{display:none}
 }
+
+/* v9.5: mobile - restore chip-one as a calm caption pill below the box, clear of box, jar and text; fades as the jar rises */
+@media(max-width:760px){
+.floating-chip.chip-one{display:flex;left:50%;right:auto;top:452px;bottom:auto;transform:translateX(-50%) scale(1.35);transform-origin:center;animation:none;opacity:calc(1 - var(--lift)*1.6);pointer-events:none}
+}
