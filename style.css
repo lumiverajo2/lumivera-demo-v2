@@ -258,3 +258,9 @@ header nav a.active:after,header nav a:hover:after{transform:scaleX(1)}
 @media(max-width:760px){
 .floating-chip.chip-one{left:12px;right:auto;top:45px;bottom:auto;transform:rotate(-9deg) scale(1.15);transform-origin:left top;animation:none;opacity:calc(clamp(0,(var(--p) - .08)*5,1) * (1 - clamp(0,(var(--p) - .33)*5,1)));pointer-events:none}
 }
+
+/* v9.8: swap faces. Printed artwork now on the outer face of the side walls, plain carton board on the inner face. */
+.box-side{background:linear-gradient(180deg,#1d3132,#2f4748 70%,#3b5556)}
+.box-wall-l{background:linear-gradient(180deg,#1d3132,#2f4748 70%,#3b5556)}
+.box-side:before{background:#5b7677 url('assets/box-side.jpg') center/100% 100% no-repeat}
+.box-wall-l:before{background:#5b7677 url('assets/box-left.jpg') center/100% 100% no-repeat}
